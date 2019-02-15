@@ -31,7 +31,7 @@ def create_model():
 if EXECUTE_TRAINING:
     model = create_model()
     train_val_sets = get_training_and_validation_sets(paths)
-    meta_train_params = FewShotParameters(train_val_sets, model)
+    meta_train_params = FewShotParameters.get_params(train_val_sets, model)
     best_learner_weights, _ = meta_train(model, meta_train_params, use_gpu)
     torch.save(best_learner_weights, best_learner_parameters_file)
 
@@ -42,7 +42,7 @@ if EXECUTE_TEST:
     model.load_state_dict(state_dict)
 
     test_set = load_meta_test_set(paths)
-    meta_test_params = FewShotParameters(test_set)
+    meta_test_params = FewShotParameters.get_params(test_set)
 
     avg_test_acc, test_std = meta_test(model, meta_test_params, use_gpu)
     print('Average test accuracy: {} with a std of {}'.format(avg_test_acc * 100, test_std * 100))
@@ -59,7 +59,7 @@ if PROGRESSIVE_REGULARIZATON:
     train_val_sets = get_training_and_validation_sets(paths)
 
     model = create_model()
-    meta_train_params = FewShotParameters(train_val_sets, model)
+    meta_train_params = FewShotParameters.get_params(train_val_sets, model)
 
     for idx, l in enumerate(lambdas):
         meta_train_params.l1_lambda = l

@@ -5,12 +5,13 @@ from utils.dataloader import (load_meta_test_dataloader, load_meta_train_dataloa
 
 
 class FewShotParameters(object):
-    def factory(self, dataset_list, model=None):
+
+    @staticmethod
+    def get_params(dataset_list, model=None):
         if model:
             return TrainingParameters(model, dataset_list)
         else:
             return TestParameters(dataset_list)
-        factory = staticmethod(factory)
 
 class TrainingParameters(FewShotParameters):
 
@@ -19,10 +20,11 @@ class TrainingParameters(FewShotParameters):
         LEARNING_RATE = 1e-3
         N_SUPPORT = 5
         N_QUERY = 15
-        SAMPLES_PER_CLASS = N_SUPPORT + N_QUERY
+        SAMPLES_PER_CLASS = N_SUPPORT + N_QUERY        
         N_WAYS = (5, 5)
 
         # Variables
+        self.patience_limit = 20
         self.n_episodes = 100
         self.n_epochs = 10000
         self.l1_lambda = 0.1
@@ -42,8 +44,6 @@ class TrainingParameters(FewShotParameters):
         self.scheduler = optim.lr_scheduler.StepLR(self.optimizer,
                                                    step_size=20,  # 20 epochs of 100 episodes
                                                    gamma=0.5)
-
-        self.PATIENCE_LIMIT = 20
 
 
 class TestParameters(FewShotParameters):
