@@ -2,7 +2,7 @@ import numpy
 import torch
 
 from protonet import ProtoNet
-from utils.few_shot_parameters import FewShotTestParameters, FewShotTrainingParameters
+from utils.few_shot_parameters import FewShotParameters
 from utils.meta_test import meta_test
 from utils.meta_train import meta_train
 from utils.dataloader import load_meta_test_set, get_training_and_validation_sets
@@ -30,8 +30,8 @@ def create_model():
 
 if EXECUTE_TRAINING:
     model = create_model()
-    sets = get_training_and_validation_sets(paths)
-    meta_train_params = FewShotTrainingParameters(model, sets)
+    train_val_sets = get_training_and_validation_sets(paths)
+    meta_train_params = FewShotParameters(train_val_sets, model)
     best_learner_weights, _ = meta_train(model, meta_train_params, use_gpu)
     torch.save(best_learner_weights, best_learner_parameters_file)
 
@@ -42,7 +42,7 @@ if EXECUTE_TEST:
     model.load_state_dict(state_dict)
 
     test_set = load_meta_test_set(paths)
-    meta_test_params = FewShotTestParameters(test_set)
+    meta_test_params = FewShotParameters(test_set)
 
     avg_test_acc, test_std = meta_test(model, meta_test_params, use_gpu)
     print('Average test accuracy: {} with a std of {}'.format(avg_test_acc * 100, test_std * 100))
@@ -56,10 +56,10 @@ if PROGRESSIVE_REGULARIZATON:
     lambdas = [0]  # Start the training without any regularization
     lambdas.extend(numpy.logspace(-2, 1, 10))
 
-    sets = get_training_and_validation_sets(paths)
+    train_val_sets = get_training_and_validation_sets(paths)
 
     model = create_model()
-    meta_train_params = FewShotTrainingParameters(model, sets)
+    meta_train_params = FewShotParameters(train_val_sets, model)
 
     for idx, l in enumerate(lambdas):
         meta_train_params.l1_lambda = l
@@ -76,7 +76,7 @@ if PROGRESSIVE_REGULARIZATON:
             torch.save(learner_weights, best_learner_grid_search_parameters_file)
 
     test_set = load_meta_test_set(paths)
-    meta_test_params = FewShotTestParameters(test_set)
+    meta_test_params = FewShotParameters(test_set)
 
     model = create_model()
     state_dict = torch.load(best_learner_grid_search_parameters_file)
