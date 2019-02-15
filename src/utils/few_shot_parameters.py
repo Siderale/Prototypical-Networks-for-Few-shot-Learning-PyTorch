@@ -9,7 +9,7 @@ class FewShotParameters(object):
     @staticmethod
     def get_params(dataset_list, model=None):
         if model:
-            return TrainingParameters(model, dataset_list)
+            return TrainingParameters(dataset_list, model)
         else:
             return TestParameters(dataset_list)
 
